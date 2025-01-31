@@ -157,7 +157,11 @@ class EditDialog(QDialog):
         # Add courses
         course_name = sms.table.item(index, 2).text()
         self.course_names = QComboBox()
-        self.course_names.addItems(["Biology", "Math", "Astronomy", "Physics"])
+        self.course_names.addItems(["Select course from list below",
+                                    "Biology",
+                                    "Math",
+                                    "Astronomy",
+                                    "Physics"])
         self.course_names.setCurrentText(course_name)
         layout.addWidget(self.course_names)
 
@@ -186,6 +190,10 @@ class EditDialog(QDialog):
                             self.course_names.currentIndex()),
                         self.mobile.text(),
                         self.student_id))
+
+        self.student_name.clear()
+        self.mobile.clear()
+        self.course_names.setCurrentIndex(0)
 
         connection.commit()
         cursor.close()
@@ -251,7 +259,11 @@ class InsertDialog(QDialog):
 
         # Add courses
         self.course_names = QComboBox()
-        self.course_names.addItems(["Biology", "Math", "Astronomy", "Physics"])
+        self.course_names.addItems(["Select course from list below",
+                                    "Biology",
+                                    "Math",
+                                    "Astronomy",
+                                    "Physics"])
         layout.addWidget(self.course_names)
 
         # Add mobile number
@@ -275,6 +287,10 @@ class InsertDialog(QDialog):
         cursor.execute("INSERT INTO students (name, course, mobile) VALUES "
                        "(%s, %s,  %s)",
                        (name, course, mobile))
+        self.student_name.clear()
+        self.mobile.clear()
+        self.course_names.setCurrentIndex(0)
+
         connection.commit()
         cursor.close()
         connection.close()
@@ -301,7 +317,6 @@ class AddSearchDialogue(QDialog):
 
     def search(self):
         name = self.student_name.text()
-        print(name)
         connection = DatabaseConnection().connect()
         cursor = connection.cursor()
         cursor.execute("SELECT * FROM students WHERE name = %s",
