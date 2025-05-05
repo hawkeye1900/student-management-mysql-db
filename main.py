@@ -6,10 +6,12 @@ from PyQt6.QtWidgets import (QApplication, QLabel, QWidget,
                              QStatusBar, QMessageBox)
 from PyQt6.QtGui import QAction, QIcon, QBrush, QColor
 import sys
+
+from mysql.connector import Error
 from mysql.connector import connection
 
 
-class DatabaseConnection():
+class DatabaseConnection:
     def __init__(self, host="localhost", user="root", password="root",
                  database="school"):
         self.host = host
@@ -18,12 +20,18 @@ class DatabaseConnection():
         self.database = database
 
     def connect(self):
-        db_connection = connection.MySQLConnection(host=self.host,
-                                                   user=self.user,
-                                                   password=self.password,
-                                                   database=self.database)
+        try:
+            db_connection = connection.MySQLConnection(host=self.host,
+                                                    user=self.user,
+                                                    password=self.password,
+                                                    database=self.database)
+            if db_connection.is_connected():
+                print("Connected")
+                return db_connection
 
-        return db_connection
+        except Error as e:
+            print(f"Error while connecting to database: {e}")
+            return None
 
 
 class MainWindow(QMainWindow):
