@@ -1,14 +1,14 @@
+import sys
+import mysql.connector
+from mysql.connector import Error
+
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (QApplication, QLabel, QWidget,
                              QGridLayout, QLineEdit, QPushButton,
                              QMainWindow, QTableWidget, QTableWidgetItem,
                              QDialog, QVBoxLayout, QComboBox, QToolBar,
                              QStatusBar, QMessageBox)
-from PyQt6.QtGui import QAction, QIcon, QBrush, QColor
-import sys
-
-from mysql.connector import Error
-from mysql.connector import connection
+from PyQt6.QtGui import QAction, QIcon
 
 
 class DatabaseConnection:
@@ -19,19 +19,26 @@ class DatabaseConnection:
         self.password = password
         self.database = database
 
-    def connect(self):
+    def create_connection(self):
         try:
-            db_connection = connection.MySQLConnection(host=self.host,
-                                                    user=self.user,
-                                                    password=self.password,
-                                                    database=self.database)
+            print("Creating connection")
+            db_connection = mysql.connector.connect(
+                host="localhost",
+                user="root",
+                password="root",
+                database="school"
+            )
+
             if db_connection.is_connected():
                 print("Connected")
                 return db_connection
+            else:
+                print("Failed to connect")
+                return None
 
         except Error as e:
             print(f"Error while connecting to database: {e}")
-            return None
+            return "None"
 
 
 class MainWindow(QMainWindow):
@@ -95,7 +102,7 @@ class MainWindow(QMainWindow):
         self.statusbar.addWidget(delete_button)
 
     def load_data(self):
-        connection = DatabaseConnection().connect()
+        connection = DatabaseConnection().create_connection()
         cursor = connection.cursor()
         cursor.execute("SELECT * FROM students")
         result = cursor.fetchall()
@@ -134,7 +141,7 @@ class AboutDialog(QMessageBox):
         self.setWindowTitle("About")
 
         content = """
-        This app was created using PyQt6 and is the author's first attempt 
+        This app was created using PyQt6 and is the author's first attempt
         at using this library
         """
 
@@ -188,7 +195,7 @@ class EditDialog(QDialog):
 
     def update_student(self):
         print("Running update")
-        connection = DatabaseConnection().connect()
+        connection = DatabaseConnection().create_connection()
         cursor = connection.cursor()
         cursor.execute("UPDATE students SET name = %s, course = %s, "
                        "mobile = %s "
@@ -235,7 +242,7 @@ class DeleteDialog(QDialog):
         index = sms.table.currentRow()
         student_id = sms.table.item(index, 0).text()
 
-        connection = DatabaseConnection().connect()
+        connection = DatabaseConnection().create_connection()
         cursor = connection.cursor()
         cursor.execute("DELETE from students WHERE id = %s", (student_id, ))
 
@@ -290,7 +297,7 @@ class InsertDialog(QDialog):
         name = self.student_name.text()
         course = self.course_names.itemText(self.course_names.currentIndex())
         mobile = self.mobile.text()
-        connection = DatabaseConnection().connect()
+        connection = DatabaseConnection().create_connection()
         cursor = connection.cursor()
         cursor.execute("INSERT INTO students (name, course, mobile) VALUES "
                        "(%s, %s,  %s)",
@@ -325,7 +332,7 @@ class AddSearchDialogue(QDialog):
 
     def search(self):
         name = self.student_name.text()
-        connection = DatabaseConnection().connect()
+        connection = DatabaseConnection().create_connection()
         cursor = connection.cursor()
         cursor.execute("SELECT * FROM students WHERE name = %s",
                                 (name,))
@@ -346,7 +353,11 @@ class AddSearchDialogue(QDialog):
 
 
 app = QApplication(sys.argv)
+print("Step 1")
 sms = MainWindow()
+print("Step 2")
 sms.show()
+print("Step 3")
 sms.load_data()
+print("Step 4")
 sys.exit(app.exec())
